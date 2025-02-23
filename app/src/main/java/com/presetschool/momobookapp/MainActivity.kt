@@ -22,6 +22,7 @@ import com.presetschool.momobookapp.service.ForegroundService
 import android.Manifest
 import android.util.Log
 import com.presetschool.momobookapp.service.SmsReader
+import com.presetschool.momobookapp.service.Utils
 
 
 class MainActivity : AppCompatActivity() {
@@ -110,13 +111,17 @@ class MainActivity : AppCompatActivity() {
         val filterDate = "01/02/2025" // 🟢 Change this to the desired date (dd/MM/yyyy)
         val smsList = SmsReader.readSms(this, filterDate)
 
-        val messages = if (smsList.isNotEmpty()) {
-            smsList.joinToString("\n\n")
-        } else {
-            "No SMS messages from VANY after $filterDate."
+        for ( m in smsList){
+            Log.d(Utils.messageType(m).toString(), m.body)
         }
 
-        Log.d("messages", messages)
+//        val messages = if (smsList.isNotEmpty()) {
+//            smsList.joinToString("\n\n")
+//        } else {
+//            "No SMS messages from VANY after $filterDate."
+//        }
+
+//        Log.d("messages", messages)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

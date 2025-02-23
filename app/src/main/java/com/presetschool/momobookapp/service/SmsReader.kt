@@ -3,14 +3,15 @@ package com.presetschool.momobookapp.service
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import com.presetschool.momobookapp.model.Message
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 object SmsReader {
 
-    fun readSms(context: Context, filterDate: String): List<String> {
-        val smsList = mutableListOf<String>()
+    fun readSms(context: Context, filterDate: String): List<Message> {
+        val smsList = mutableListOf<Message>()
 
         try {
             val uri: Uri = Uri.parse("content://sms/inbox") // Inbox messages
@@ -35,12 +36,19 @@ object SmsReader {
                     val sender = if (addressIndex != -1) it.getString(addressIndex) else "Unknown"
                     val message = if (bodyIndex != -1) it.getString(bodyIndex) else "No Content"
                     val timestamp = if (dateIndex != -1) it.getLong(dateIndex) else 0L
-                    val id = if (idIndex != -1) it.getLong(idIndex) else ""
+                    val id = if (idIndex != -1) it.getLong(idIndex) else 0
 
                     // 🟢 Convert timestamp to a readable date format
                     val formattedDate = formatDate(timestamp)
+                    val formattedDate2 = formatDate2(timestamp)
 
-                    smsList.add("  ID: $id\n📩 From: $sender\n🕒 $formattedDate\n$message")
+                    smsList.add(Message(
+                        apiDate = formattedDate,
+                        displayDate = formattedDate2,
+                        body = message,
+                        id = id,
+                        address = sender
+                    ))
                 }
             }
         } catch (e: Exception) {
@@ -55,6 +63,16 @@ object SmsReader {
         return if (timestamp > 0) {
 //            val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
             val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+            sdf.format(Date(timestamp))
+        } else {
+            "Unknown Date"
+        }
+    }
+
+    private fun formatDate2(timestamp: Long): String {
+        return if (timestamp > 0) {
+            val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
+//            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
             sdf.format(Date(timestamp))
         } else {
             "Unknown Date"

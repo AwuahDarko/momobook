@@ -30,7 +30,7 @@ class SmsReceiver : BroadcastReceiver() {
                         Log.e("SmsReceiver", "SMS received from: $sender, Message: $messageBody")
 
                         // Show a toast notification (or update UI)
-                        Toast.makeText(context, "New SMS from $sender: $messageBody", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "$sender\n $messageBody", Toast.LENGTH_LONG).show()
                     }
                 } catch (e: Exception) {
                     Log.e("SmsReceiver", "Error reading SMS: ${e.message}")
