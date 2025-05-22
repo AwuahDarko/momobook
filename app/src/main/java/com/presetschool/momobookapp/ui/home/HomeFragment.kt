@@ -1,13 +1,25 @@
 package com.presetschool.momobookapp.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.snackbar.Snackbar
+import com.presetschool.momobookapp.adapter.MessageItemAdapter
 import com.presetschool.momobookapp.databinding.FragmentHomeBinding
+import com.presetschool.momobookapp.model.Message
+import com.presetschool.momobookapp.model.MessageType
+import com.presetschool.momobookapp.service.SharedPreferencesHelper
+import com.presetschool.momobookapp.service.SmsReader
+import com.presetschool.momobookapp.service.Utils
+import kotlin.streams.asSequence
 
 class HomeFragment : Fragment() {
 
@@ -16,6 +28,11 @@ class HomeFragment : Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
+
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: MessageItemAdapter
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private val itemList = ArrayList<Message>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,15 +45,91 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textHome
-        homeViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
+        recyclerView = binding.recyclerView
+        swipeRefreshLayout = binding.swipeRefreshLayout
+        recyclerView.layoutManager = LinearLayoutManager(this.requireContext())
+
+        setupSwipeRefresh()
+        // Prepare data
+        getAllMessages()
+
+        // Initialize adapter
+        adapter = MessageItemAdapter(itemList) { item ->
+            // Handle item click
+            Toast.makeText(this.requireContext(), "${item.body}", Toast.LENGTH_SHORT).show()
         }
+
+        // Set adapter to RecyclerView
+        recyclerView.adapter = adapter
         return root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun getAllMessages() {
+        // Add sample data
+        itemList.clear()
+        itemList.addAll(readMessages())
+
+    }
+
+    private fun readMessages(): List<Message>{
+        val sharedPreference = SharedPreferencesHelper(this.requireContext())
+
+        val originalDateStr = sharedPreference.getString("start_date")
+
+        val list = originalDateStr.split("-")
+        val filterDate = "${list[2]}/${list[1]}/${list[0]}"
+        Log.d("DATE OO", filterDate)
+
+//        val filterDate = "01/02/2025" // 🟢 Change this to the desired date (dd/MM/yyyy)
+        return SmsReader.readSms(this.requireContext(), filterDate)
+            .asSequence().filter{ Utils.messageType(it) == MessageType.EXPENSE || Utils.messageType(it) == MessageType.INCOME }.toList()
+//        val smsList = SmsReader.readSms(this.requireContext(), filterDate)
+
+//        for ( m in smsList){
+//            Log.d(Utils.messageType(m).toString(), Utils.extractTransactionId(m))
+//        }
+
+//        val messages = if (smsList.isNotEmpty()) {
+//            smsList.joinToString("\n\n")
+//        } else {
+//            "No SMS messages from VANY after $filterDate."
+//        }
+
+//        Log.d("messages", messages)
+    }
+
+    private fun setupSwipeRefresh() {
+        // Set refresh indicator colors
+        swipeRefreshLayout.setColorSchemeResources(
+            android.R.color.holo_blue_bright,
+            android.R.color.holo_green_light,
+            android.R.color.holo_orange_light,
+            android.R.color.holo_red_light
+        )
+
+        // Set refresh listener
+        swipeRefreshLayout.setOnRefreshListener {
+            // Refresh data
+            refreshData()
+        }
+    }
+
+    private fun refreshData() {
+        // Load fresh data from database
+        getAllMessages()
+
+        // Update adapter
+        adapter.updateData(itemList)
+
+        // Stop refresh animation
+        swipeRefreshLayout.isRefreshing = false
+
+        // Show a confirmation message
+        Snackbar.make(recyclerView, "Data refreshed", Snackbar.LENGTH_SHORT).show()
     }
 }

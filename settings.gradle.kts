@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MoMoBookApp"
+rootProject.name = "MoMo Book"
 include(":app")

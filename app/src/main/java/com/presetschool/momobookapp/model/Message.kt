@@ -6,5 +6,5 @@ data class Message(
     val displayDate: String,
     val address: String,
     val body: String,
-    val id: Long
+    val id: Long,
 )

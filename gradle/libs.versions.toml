@@ -14,10 +14,12 @@ navigationFragmentKtx = "2.6.0"
 navigationUiKtx = "2.6.0"
 lifecycleProcess = "2.8.7"
 media3CommonKtx = "1.5.1"
+recyclerview = "1.4.0"
 retrofit = "2.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

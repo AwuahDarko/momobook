@@ -3,6 +3,7 @@ package com.presetschool.momobookapp.service
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import com.presetschool.momobookapp.model.Message
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -53,9 +54,109 @@ object SmsReader {
             }
         } catch (e: Exception) {
             Log.e("SmsReader", "Error reading SMS: ${e.message}")
+//            Toast.makeText(context, "Error reading SMS: ${e.message}", Toast.LENGTH_LONG).show()
         }
 
         return smsList
+    }
+
+    fun readPendingSms(context: Context, filterDate: String, filterId: String):List<Message> {
+        val smsList = mutableListOf<Message>()
+
+        try {
+            val uri: Uri = Uri.parse("content://sms/inbox") // Inbox messages
+            val projection = arrayOf("_id", "address", "date", "body")
+
+            // 🟢 Convert filterDate (String) to a timestamp
+            val filterTimestamp = convertDateToTimestamp(filterDate)
+
+            // 🟢 Filter SMS where sender is "VANY" AND date is after filterTimestamp
+            val selection = "address LIKE ? AND date >= ? AND _id not in ($filterId)"
+            val selectionArgs = arrayOf("%MobileMoney%", filterTimestamp.toString())
+
+            val cursor = context.contentResolver.query(uri, projection, selection, selectionArgs, "date ASC")
+
+            cursor?.use {
+                val addressIndex = it.getColumnIndex("address")
+                val bodyIndex = it.getColumnIndex("body")
+                val dateIndex = it.getColumnIndex("date")
+                val idIndex = it.getColumnIndex("_id")
+
+                while (it.moveToNext()) {
+                    val sender = if (addressIndex != -1) it.getString(addressIndex) else "Unknown"
+                    val message = if (bodyIndex != -1) it.getString(bodyIndex) else "No Content"
+                    val timestamp = if (dateIndex != -1) it.getLong(dateIndex) else 0L
+                    val id = if (idIndex != -1) it.getLong(idIndex) else 0
+
+                    // 🟢 Convert timestamp to a readable date format
+                    val formattedDate = formatDate(timestamp)
+                    val formattedDate2 = formatDate2(timestamp)
+
+                    smsList.add(Message(
+                        apiDate = formattedDate,
+                        displayDate = formattedDate2,
+                        body = message,
+                        id = id,
+                        address = sender
+                    ))
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("SmsReader", "Error reading SMS: ${e.message}")
+//            Toast.makeText(context, "Error reading SMS: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+
+        return smsList
+    }
+
+
+    fun readNextPendingSms(context: Context, filterDate: String, filterId: String): Message?{
+        var sms:Message? = null
+
+        try {
+            val uri: Uri = Uri.parse("content://sms/inbox") // Inbox messages
+            val projection = arrayOf("_id", "address", "date", "body")
+
+            // 🟢 Convert filterDate (String) to a timestamp
+            val filterTimestamp = convertDateToTimestamp(filterDate)
+
+            // 🟢 Filter SMS where sender is "VANY" AND date is after filterTimestamp
+            val selection = "address LIKE ? AND date >= ? AND _id not in ($filterId)"
+            val selectionArgs = arrayOf("%MobileMoney%", filterTimestamp.toString())
+
+            val cursor = context.contentResolver.query(uri, projection, selection, selectionArgs, "date ASC LIMIT 1")
+
+            cursor?.use {
+                val addressIndex = it.getColumnIndex("address")
+                val bodyIndex = it.getColumnIndex("body")
+                val dateIndex = it.getColumnIndex("date")
+                val idIndex = it.getColumnIndex("_id")
+
+                while (it.moveToNext()) {
+                    val sender = if (addressIndex != -1) it.getString(addressIndex) else "Unknown"
+                    val message = if (bodyIndex != -1) it.getString(bodyIndex) else "No Content"
+                    val timestamp = if (dateIndex != -1) it.getLong(dateIndex) else 0L
+                    val id = if (idIndex != -1) it.getLong(idIndex) else 0
+
+                    // 🟢 Convert timestamp to a readable date format
+                    val formattedDate = formatDate(timestamp)
+                    val formattedDate2 = formatDate2(timestamp)
+
+                    sms = Message(
+                        apiDate = formattedDate,
+                        displayDate = formattedDate2,
+                        body = message,
+                        id = id,
+                        address = sender
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("SmsReader", "Error reading SMS: ${e.message}")
+//            Toast.makeText(context, "Error reading SMS: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+
+        return sms
     }
 
     // Function to format timestamp into a readable date and time

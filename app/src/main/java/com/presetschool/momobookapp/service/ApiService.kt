@@ -8,6 +8,6 @@ import retrofit2.http.POST
 
 
 interface ApiService {
-    @POST("posts") // Endpoint
-    fun createPost(@Body request: SmsRequest): Call<SmsResponse>
+    @POST("add_transaction") // Endpoint
+    fun createTransaction(@Body request: SmsRequest): Call<SmsResponse>
 }
