@@ -7,6 +7,8 @@ import android.provider.Telephony
 import android.telephony.SmsMessage
 import android.util.Log
 import android.widget.Toast
+import com.presetschool.momobookapp.model.MessageSentEvent
+import org.greenrobot.eventbus.EventBus
 import java.time.LocalTime
 
 
@@ -25,7 +27,7 @@ class SmsReceiver : BroadcastReceiver() {
                         val sender = smsMessage.originatingAddress
                         val messageBody = smsMessage.messageBody
 
-
+                        EventBus.getDefault().post(MessageSentEvent())
 
                         Log.e("SmsReceiver", "SMS received from: $sender, Message: $messageBody")
 

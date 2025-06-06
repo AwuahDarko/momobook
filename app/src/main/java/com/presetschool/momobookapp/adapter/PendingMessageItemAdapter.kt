@@ -9,6 +9,7 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.textfield.TextInputEditText
 import com.presetschool.momobookapp.R
 import com.presetschool.momobookapp.model.Message
 import com.presetschool.momobookapp.model.MessageType
@@ -33,8 +34,9 @@ class PendingMessageItemAdapter(
         val typeTxt: TextView = itemView.findViewById(R.id.typeTxt)
         val dateTxt: TextView = itemView.findViewById(R.id.dateTxt)
         val sendBtn: Button = itemView.findViewById(R.id.sendBtn)
-        val mrefTxt: EditText = itemView.findViewById(R.id.mrefTxt)
+        val mrefTxt: TextInputEditText = itemView.findViewById(R.id.mrefTxt)
         val checkbox: CheckBox = itemView.findViewById(R.id.checkbox)
+        val usageTxt: TextInputEditText = itemView.findViewById(R.id.usageTxt)
 
     }
 
@@ -66,11 +68,13 @@ class PendingMessageItemAdapter(
         holder.dateTxt.text = item.displayDate
         holder.typeTxt.text = type
         holder.checkbox.isChecked = true
+        holder.usageTxt.setText("1")
 
 
         holder.sendBtn.setOnClickListener {
             // TODO ==== call
-            val mref = holder.mrefTxt.text.trim().toString()
+            val mref = holder.mrefTxt.text?.trim().toString()
+            val use = holder.usageTxt.text?.trim().toString()
             val postRequest = SmsRequest(
                 datetime = apiDate,
                 message = item.body,
@@ -81,7 +85,8 @@ class PendingMessageItemAdapter(
                 id = item.id.toInt(),
                 type = type,
                 amount = amt,
-                includeInAccount = if( holder.checkbox.isChecked ) 1 else 0
+                includeInAccount = if( holder.checkbox.isChecked ) 1 else 0,
+                useTimes = use
             )
 
             onLoading()

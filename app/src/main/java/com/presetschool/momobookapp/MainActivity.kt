@@ -111,13 +111,15 @@ class MainActivity : AppCompatActivity() {
 //            }
 //        }, 5000)
 
+
+
         CoroutineScope(Dispatchers.Main).launch {
             while (isActive) {
                 Log.d("I AM WORKING", "WORKING....")
                val time = sharedPreference.getInt("delay_time").toLong()
                sendData()
-//                delay(1000 * 60 * time)
-                delay(1000  * time)
+                delay(1000 * 60 * time)
+//                delay(1000  * time)
             }
         }
 
@@ -168,7 +170,8 @@ class MainActivity : AppCompatActivity() {
                 id = sms.id.toInt(),
                 type = type,
                 amount = amt,
-                includeInAccount = 1
+                includeInAccount = 1,
+                useTimes = "1"
             )
 
             Utils.sendPostRequest(postRequest,
@@ -180,6 +183,9 @@ class MainActivity : AppCompatActivity() {
                     Log.d("FAILURE", "FAILURE....$msg")
                 })
         }
+
+
+
 
 
 //        val postRequest = sms?.let {

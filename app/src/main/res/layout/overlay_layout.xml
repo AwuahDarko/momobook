@@ -10,5 +10,5 @@
         android:background="@drawable/rounded_background"
         android:elevation="10dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/ic_launcher_foreground" />
+        android:src="@mipmap/ic_launcher" />
 </RelativeLayout>

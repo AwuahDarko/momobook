@@ -15,10 +15,13 @@ import com.google.android.material.snackbar.Snackbar
 import com.presetschool.momobookapp.adapter.MessageItemAdapter
 import com.presetschool.momobookapp.databinding.FragmentHomeBinding
 import com.presetschool.momobookapp.model.Message
+import com.presetschool.momobookapp.model.MessageSentEvent
 import com.presetschool.momobookapp.model.MessageType
 import com.presetschool.momobookapp.service.SharedPreferencesHelper
 import com.presetschool.momobookapp.service.SmsReader
 import com.presetschool.momobookapp.service.Utils
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import kotlin.streams.asSequence
 
 class HomeFragment : Fragment() {
@@ -131,5 +134,13 @@ class HomeFragment : Fragment() {
 
         // Show a confirmation message
         Snackbar.make(recyclerView, "Data refreshed", Snackbar.LENGTH_SHORT).show()
+    }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onDataChangedEvent(event: MessageSentEvent) {
+        // Refresh your RecyclerView
+        refreshData()
+//        Log.d("EVENT EVENT", "RESPONDING...")
     }
 }

@@ -100,15 +100,60 @@
                 android:text=""/>
         </LinearLayout>
 
-        <EditText
-            android:id="@+id/mrefTxt"
+<!--        <EditText-->
+<!--            android:id="@+id/mrefTxt"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:hint="Enter manual reference here"-->
+<!--            android:inputType="text|textAutoComplete"-->
+<!--            android:singleLine="true"-->
+<!--            android:imeOptions="actionDone"-->
+<!--            />-->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter manual reference here"
-            android:inputType="text|textAutoComplete"
-            android:singleLine="true"
-            android:imeOptions="actionDone"
-            />
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            >
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/mrefTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Manual reference"
+                android:inputType="text"
+                android:maxLines="1"
+                android:imeOptions="actionDone"
+                android:background="@color/white"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+<!--        <EditText-->
+<!--            android:id="@+id/usageTxt"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:hint="Enter number of usage"-->
+<!--            android:inputType="text|textAutoComplete"-->
+<!--            android:singleLine="true"-->
+<!--            android:imeOptions="actionDone"-->
+<!--            />-->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            >
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/usageTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Number of usage"
+                android:inputType="text|textAutoComplete"
+                android:maxLines="1"
+                android:imeOptions="actionDone"
+                android:background="@color/white"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
 
         <CheckBox
             android:id="@+id/checkbox"

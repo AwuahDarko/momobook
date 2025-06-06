@@ -42,6 +42,36 @@ class Utils {
             })
         }
 
+        fun sendGetRequest(
+             success: (result: String) -> Unit,
+            failure: (result: String) -> Unit
+        ) {
+
+            val call = RetrofitClient.instance.getRecords()
+            call.enqueue(object : Callback<SmsResponse> {
+                override fun onResponse(call: Call<SmsResponse>, response: Response<SmsResponse>) {
+                    if (response.isSuccessful) {
+                        val res = response.body() as SmsResponse;
+//                        Log.d("Retrofit", "Response: ${response.body()}")
+
+                        if (res.status == 200 || res.status == 409) {
+                            success(res.message)
+                        }else{
+                            failure(res.message)
+                        }
+                    } else {
+                        Log.e("Retrofit", "Failed: ${response.message()}")
+                        failure(response.message())
+                    }
+                }
+
+                override fun onFailure(call: Call<SmsResponse>, t: Throwable) {
+                    Log.e("Retrofit", "Error: ${t.message}")
+                    t.message?.let { failure(it) }
+                }
+            })
+        }
+
         fun messageType(message: Message): MessageType {
             val body = message.body.substring(0, 20)
             return if (body.lowercase().contains("payment for") or body.lowercase().contains("payment made for")) {
@@ -87,18 +117,25 @@ class Utils {
 
             try {
                 if (messageType(message) == MessageType.EXPENSE) {
+
+                    if(message.body.contains("Reference:")){
+                        val bod = message.body.split("Reference:")[1]
+                        val ref = bod.split("Transaction ID:")[0]
+                        return ref.trim().replace(".", "")
+                    }
+
                     val list = message.body.split("GHS")
                     val secondPart = list[1]
                     var ref = secondPart.split("to")[1]
                     ref = ref.replace(".Current Balance:", "").trim()
-                    return ref.replace("Current Balance:", "").trim()
+                    return ref.replace("Current Balance:", "").trim().replace(".", "")
                 }
 
                 if (messageType(message) == MessageType.INCOME) {
                     val list = message.body.split("Reference:")
                     val secondPart = list[1]
                     val ref = secondPart.split("Transaction")[0]
-                    return ref.trim()
+                    return ref.trim().replace(".", "")
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

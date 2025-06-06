@@ -10,4 +10,7 @@ import retrofit2.http.POST
 interface ApiService {
     @POST("add_transaction") // Endpoint
     fun createTransaction(@Body request: SmsRequest): Call<SmsResponse>
+
+    @POST("records") // Endpoint
+    fun getRecords(): Call<SmsResponse>
 }
