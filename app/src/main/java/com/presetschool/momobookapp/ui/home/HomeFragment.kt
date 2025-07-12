@@ -1,17 +1,23 @@
 package com.presetschool.momobookapp.ui.home
 
+import android.app.DatePickerDialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
+import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.snackbar.Snackbar
+import com.presetschool.momobookapp.R
 import com.presetschool.momobookapp.adapter.MessageItemAdapter
 import com.presetschool.momobookapp.databinding.FragmentHomeBinding
 import com.presetschool.momobookapp.model.Message
@@ -22,6 +28,9 @@ import com.presetschool.momobookapp.service.SmsReader
 import com.presetschool.momobookapp.service.Utils
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 import kotlin.streams.asSequence
 
 class HomeFragment : Fragment() {
@@ -35,7 +44,10 @@ class HomeFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: MessageItemAdapter
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var btnSelectDate: Button
+    private lateinit var btnReset: Button
     private val itemList = ArrayList<Message>()
+    private var selectedDate: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,6 +62,8 @@ class HomeFragment : Fragment() {
 
         recyclerView = binding.recyclerView
         swipeRefreshLayout = binding.swipeRefreshLayout
+        btnSelectDate = binding.btnSelectDate
+        btnReset = binding.btnReset
         recyclerView.layoutManager = LinearLayoutManager(this.requireContext())
 
         setupSwipeRefresh()
@@ -60,6 +74,14 @@ class HomeFragment : Fragment() {
         adapter = MessageItemAdapter(itemList) { item ->
             // Handle item click
             Toast.makeText(this.requireContext(), "${item.body}", Toast.LENGTH_SHORT).show()
+        }
+
+        btnSelectDate.setOnClickListener {
+            showDatePicker()
+        }
+
+        btnReset.setOnClickListener {
+            resetFilter()
         }
 
         // Set adapter to RecyclerView
@@ -86,7 +108,6 @@ class HomeFragment : Fragment() {
 
         val list = originalDateStr.split("-")
         val filterDate = "${list[2]}/${list[1]}/${list[0]}"
-        Log.d("DATE OO", filterDate)
 
 //        val filterDate = "01/02/2025" // 🟢 Change this to the desired date (dd/MM/yyyy)
         return SmsReader.readSms(this.requireContext(), filterDate)
@@ -94,7 +115,6 @@ class HomeFragment : Fragment() {
 //        val smsList = SmsReader.readSms(this.requireContext(), filterDate)
 
 //        for ( m in smsList){
-//            Log.d(Utils.messageType(m).toString(), Utils.extractTransactionId(m))
 //        }
 
 //        val messages = if (smsList.isNotEmpty()) {
@@ -103,7 +123,6 @@ class HomeFragment : Fragment() {
 //            "No SMS messages from VANY after $filterDate."
 //        }
 
-//        Log.d("messages", messages)
     }
 
     private fun setupSwipeRefresh() {
@@ -136,11 +155,55 @@ class HomeFragment : Fragment() {
         Snackbar.make(recyclerView, "Data refreshed", Snackbar.LENGTH_SHORT).show()
     }
 
+    private fun showDatePicker() {
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        val datePickerDialog = DatePickerDialog(
+            ContextThemeWrapper(this.requireContext(), R.style.CustomDatePickerTheme),
+            { _, selectedYear, selectedMonth, selectedDay ->
+                val selectedCalendar = Calendar.getInstance()
+                selectedCalendar.set(selectedYear, selectedMonth, selectedDay)
+
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                selectedDate = dateFormat.format(selectedCalendar.time)
+
+                filterByDate(selectedDate!!)
+            },
+            year, month, day
+        )
+
+        datePickerDialog.setOnShowListener {
+            val positiveButton = datePickerDialog.getButton(DialogInterface.BUTTON_POSITIVE)
+            val negativeButton = datePickerDialog.getButton(DialogInterface.BUTTON_NEGATIVE)
+
+            positiveButton.setTextColor(ContextCompat.getColor(this.requireContext(), R.color.purple_500))
+            negativeButton.setTextColor(ContextCompat.getColor(this.requireContext(), R.color.error_color))
+        }
+
+        datePickerDialog.show()
+    }
+
+    private fun filterByDate(date: String) {
+        adapter.filterByDate(date)
+
+        btnReset.visibility = View.VISIBLE
+    }
+
+    private fun resetFilter() {
+        adapter.resetFilter()
+        selectedDate = null
+
+        btnReset.visibility = View.GONE
+    }
+
+
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onDataChangedEvent(event: MessageSentEvent) {
         // Refresh your RecyclerView
         refreshData()
-//        Log.d("EVENT EVENT", "RESPONDING...")
     }
 }

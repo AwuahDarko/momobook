@@ -48,24 +48,23 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val sharedPreference = SharedPreferencesHelper(this.baseContext)
-         dbHelper = DatabaseHelper(this)
-//        dbHelper.deleteAllItems()
-
-//        dbHelper.addItem(LocalItem())
-
-
-
-        val startDate = sharedPreference.getString("start_date")
-        Log.d("DATE DATE", startDate)
-        if (startDate.isEmpty()) {
-            sharedPreference.saveString("start_date", LocalDate.now().toString())
-        }
-
-        val delayTime: Int = sharedPreference.getInt("delay_time", 0)
-        if (delayTime == 0) {
-            sharedPreference.saveInt("delay_time", 5)
-        }
+//        val sharedPreference = SharedPreferencesHelper(this.baseContext)
+//         dbHelper = DatabaseHelper(this)
+////        dbHelper.deleteAllItems()
+//
+////        dbHelper.addItem(LocalItem())
+//
+//
+//
+//        val startDate = sharedPreference.getString("start_date")
+//        if (startDate.isEmpty()) {
+//            sharedPreference.saveString("start_date", LocalDate.now().toString())
+//        }
+//
+//        val delayTime: Int = sharedPreference.getInt("delay_time", 0)
+//        if (delayTime == 0) {
+//            sharedPreference.saveInt("delay_time", 5)
+//        }
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -84,25 +83,30 @@ class MainActivity : AppCompatActivity() {
         navView.setupWithNavController(navController)
 
 
-        // Initialize overlay permission launcher
-        overlayPermissionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (Settings.canDrawOverlays(this)) {
-                startService(Intent(this, ForegroundService::class.java))
-                startOverlayService()
-//                Toast.makeText(this, "Overlay permission granted!", Toast.LENGTH_SHORT).show()
-                checkAndRequestPermissions()
-            } else {
-//                Toast.makeText(this, "Overlay permission denied!", Toast.LENGTH_SHORT).show()
-                checkAndRequestPermissions()
-            }
-        }
+//        startService(Intent(this, ForegroundService::class.java))
+//        startOverlayService()
+//
+//        checkAndRequestPermissions()
 
-        if (!Settings.canDrawOverlays(this)) {
-            requestOverlayPermission()
-        } else {
-            startService(Intent(this, ForegroundService::class.java))
-            checkAndRequestPermissions()
-        }
+        // Initialize overlay permission launcher
+//        overlayPermissionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+//            if (Settings.canDrawOverlays(this)) {
+//                startService(Intent(this, ForegroundService::class.java))
+//                startOverlayService()
+////                Toast.makeText(this, "Overlay permission granted!", Toast.LENGTH_SHORT).show()
+//                checkAndRequestPermissions()
+//            } else {
+////                Toast.makeText(this, "Overlay permission denied!", Toast.LENGTH_SHORT).show()
+//                checkAndRequestPermissions()
+//            }
+//        }
+
+//        if (!Settings.canDrawOverlays(this)) {
+////            requestOverlayPermission()
+//        } else {
+//            startService(Intent(this, ForegroundService::class.java))
+//            checkAndRequestPermissions()
+//        }
 
 //        val timer = Timer()
 //        timer.schedule(object : TimerTask() {
@@ -113,15 +117,14 @@ class MainActivity : AppCompatActivity() {
 
 
 
-        CoroutineScope(Dispatchers.Main).launch {
-            while (isActive) {
-                Log.d("I AM WORKING", "WORKING....")
-               val time = sharedPreference.getInt("delay_time").toLong()
-               sendData()
-                delay(1000 * 60 * time)
+//        CoroutineScope(Dispatchers.Main).launch {
+//            while (isActive) {
+//               val time = sharedPreference.getInt("delay_time").toLong()
+////               sendData()
+////                delay(1000 * 60 * time)
 //                delay(1000  * time)
-            }
-        }
+//            }
+//        }
 
 
     }
@@ -176,11 +179,9 @@ class MainActivity : AppCompatActivity() {
 
             Utils.sendPostRequest(postRequest,
                 success = { msg ->
-                    Log.d("SUCCESS", "SUCCESS....$msg")
                     dbHelper.addItem( LocalItem(sms.id.toString(), "", sms.body))
                     EventBus.getDefault().post(MessageSentEvent())
                 }, failure = { msg ->
-                    Log.d("FAILURE", "FAILURE....$msg")
                 })
         }
 

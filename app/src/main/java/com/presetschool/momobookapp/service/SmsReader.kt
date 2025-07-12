@@ -13,6 +13,8 @@ object SmsReader {
 
     fun readSms(context: Context, filterDate: String): List<Message> {
         val smsList = mutableListOf<Message>()
+        val senderId = if(Utils.isPreset) "MobileMoney" else  "CalBank"
+
 
         try {
             val uri: Uri = Uri.parse("content://sms/inbox") // Inbox messages
@@ -23,7 +25,7 @@ object SmsReader {
 
             // 🟢 Filter SMS where sender is "VANY" AND date is after filterTimestamp
             val selection = "address LIKE ? AND date >= ?"
-            val selectionArgs = arrayOf("%MobileMoney%", filterTimestamp.toString())
+            val selectionArgs = arrayOf("%$senderId%", filterTimestamp.toString())
 
             val cursor = context.contentResolver.query(uri, projection, selection, selectionArgs, "date DESC")
 
@@ -42,6 +44,8 @@ object SmsReader {
                     // 🟢 Convert timestamp to a readable date format
                     val formattedDate = formatDate(timestamp)
                     val formattedDate2 = formatDate2(timestamp)
+
+
 
                     smsList.add(Message(
                         apiDate = formattedDate,
@@ -62,6 +66,7 @@ object SmsReader {
 
     fun readPendingSms(context: Context, filterDate: String, filterId: String):List<Message> {
         val smsList = mutableListOf<Message>()
+        val senderId = if(Utils.isPreset) "MobileMoney" else  "CalBank"
 
         try {
             val uri: Uri = Uri.parse("content://sms/inbox") // Inbox messages
@@ -72,7 +77,7 @@ object SmsReader {
 
             // 🟢 Filter SMS where sender is "VANY" AND date is after filterTimestamp
             val selection = "address LIKE ? AND date >= ? AND _id not in ($filterId)"
-            val selectionArgs = arrayOf("%MobileMoney%", filterTimestamp.toString())
+            val selectionArgs = arrayOf("%$senderId%", filterTimestamp.toString())
 
             val cursor = context.contentResolver.query(uri, projection, selection, selectionArgs, "date ASC")
 
@@ -112,6 +117,7 @@ object SmsReader {
 
     fun readNextPendingSms(context: Context, filterDate: String, filterId: String): Message?{
         var sms:Message? = null
+        val senderId = if(Utils.isPreset) "MobileMoney" else  "CalBank"
 
         try {
             val uri: Uri = Uri.parse("content://sms/inbox") // Inbox messages
@@ -122,7 +128,7 @@ object SmsReader {
 
             // 🟢 Filter SMS where sender is "VANY" AND date is after filterTimestamp
             val selection = "address LIKE ? AND date >= ? AND _id not in ($filterId)"
-            val selectionArgs = arrayOf("%MobileMoney%", filterTimestamp.toString())
+            val selectionArgs = arrayOf("%$senderId%", filterTimestamp.toString())
 
             val cursor = context.contentResolver.query(uri, projection, selection, selectionArgs, "date ASC LIMIT 1")
 

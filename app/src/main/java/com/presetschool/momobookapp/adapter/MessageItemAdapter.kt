@@ -15,6 +15,8 @@ class MessageItemAdapter (
     private val onItemClick: (Message) -> Unit
 ) : RecyclerView.Adapter<MessageItemAdapter.ViewHolder>() {
 
+    private var filteredMessages: List<Message> = items.toList()
+
     // ViewHolder pattern
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val senderTxt: TextView = itemView.findViewById(R.id.senderTxt)
@@ -35,7 +37,7 @@ class MessageItemAdapter (
 
     // Replace the contents of a view
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = items[position]
+        val item = filteredMessages[position]
 
         val messageType = if (Utils.messageType(item) == MessageType.INCOME) "INCOME" else if(Utils.messageType(item) == MessageType.EXPENSE) "EXPENSE" else "NONE"
 
@@ -56,10 +58,26 @@ class MessageItemAdapter (
     }
 
     // Return the size of your dataset
-    override fun getItemCount() = items.size
+    override fun getItemCount() = filteredMessages.size
+
+    fun getFilteredCount(): Int = filteredMessages.size
+    fun getTotalCount(): Int = items.size
 
     fun updateData(itemList: List<Message>) {
         items = itemList
+        filteredMessages = itemList.toList()
+        notifyDataSetChanged()
+    }
+
+    fun filterByDate(selectedDate: String) {
+        filteredMessages = items.filter { sms ->
+            sms.apiDate.split(" ")[0] == selectedDate
+        }
+        notifyDataSetChanged()
+    }
+
+    fun resetFilter() {
+        filteredMessages = items.toList()
         notifyDataSetChanged()
     }
 

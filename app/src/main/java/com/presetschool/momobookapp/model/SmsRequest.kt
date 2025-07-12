@@ -14,4 +14,5 @@ data class SmsRequest(
     @SerializedName("amount") val amount: String,
     @SerializedName("include_in_account") val includeInAccount: Int,
     @SerializedName("use_times") val useTimes: String,
+    @SerializedName("from") val from: String,
 )

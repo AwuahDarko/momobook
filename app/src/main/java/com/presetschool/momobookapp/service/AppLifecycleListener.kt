@@ -8,13 +8,11 @@ import androidx.lifecycle.OnLifecycleEvent
 class AppLifecycleListener(private val service: ForegroundService) : LifecycleObserver {
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun onBackground() {
-        Log.d("OverlayDebug", "App moved to background, showing overlay")
-        service.showOverlay()
+//        service.showOverlay()
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     fun onForeground() {
-        Log.d("OverlayDebug", "App moved to foreground, hiding overlay")
-        service.hideOverlay()
+//        service.hideOverlay()
     }
 }

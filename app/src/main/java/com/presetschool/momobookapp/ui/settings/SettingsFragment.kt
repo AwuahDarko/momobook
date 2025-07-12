@@ -81,7 +81,6 @@ class SettingsFragment : Fragment() {
 
     private fun getSetdate(): String {
         val localDate: LocalDate = LocalDate.parse(sharePreference.getString("start_date"))
-        Log.d("DATE DATE", localDate.toString())
         val year = localDate.year
         val month = localDate.dayOfMonth
         val day = localDate.dayOfMonth

@@ -7,4 +7,20 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="red">#ff2e00</color>
+
+    <!-- Background Colors -->
+    <color name="background_color">#FFFFFF</color>
+
+    <!-- Text Colors -->
+    <color name="primary_text">#1A1A1A</color>
+    <color name="secondary_text">#666666</color>
+
+    <!-- Accent Colors -->
+    <color name="accent_color">#2196F3</color>
+    <color name="fingerprint_color">#4CAF50</color>
+    <color name="fingerprint_active">#FF9800</color>
+    <color name="success_color">#4CAF50</color>
+    <color name="error_color">#F44336</color>
+    <color name="disabled_color">#CCCCCC</color>
 </resources>

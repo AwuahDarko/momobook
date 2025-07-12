@@ -119,7 +119,6 @@ class PendingFragment : Fragment() {
 
         var IDs: String = ids.joinToString(",")
 
-        Log.d("HELLO HELLO", IDs)
 
         if (IDs.isEmpty()) IDs = "0"
 
@@ -165,7 +164,6 @@ class PendingFragment : Fragment() {
         itemList.clear()
         itemList.addAll(readPendingMessages())
         adapter.updateData(itemList)
-//        Log.d("EVENT EVENT", "RESPONDING...")
     }
 
 }

@@ -1,13 +1,19 @@
 package com.presetschool.momobookapp.adapter
 
+import android.content.Context
+import android.util.Log
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.presetschool.momobookapp.R
@@ -70,6 +76,31 @@ class PendingMessageItemAdapter(
         holder.checkbox.isChecked = true
         holder.usageTxt.setText("1")
 
+        holder.mrefTxt.setOnEditorActionListener { _, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE ||
+                (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
+
+                holder.mrefTxt.clearFocus()
+                hideKeyboard(holder.mrefTxt)
+                true
+            } else {
+                false
+            }
+        }
+
+
+        holder.usageTxt.setOnEditorActionListener { _, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE ||
+                (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
+
+                holder.usageTxt.clearFocus()
+                hideKeyboard(holder.usageTxt)
+                true
+            } else {
+                false
+            }
+        }
+
 
         holder.sendBtn.setOnClickListener {
             // TODO ==== call
@@ -86,7 +117,8 @@ class PendingMessageItemAdapter(
                 type = type,
                 amount = amt,
                 includeInAccount = if( holder.checkbox.isChecked ) 1 else 0,
-                useTimes = use
+                useTimes = use,
+                from = if (Utils.isPreset)  "preset" else "wonder"
             )
 
             onLoading()
@@ -109,6 +141,11 @@ class PendingMessageItemAdapter(
         holder.itemView.setOnClickListener {
             onItemClicked(item)
         }
+    }
+
+    private fun hideKeyboard(editText: EditText) {
+        val imm = editText.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(editText.windowToken, 0)
     }
 
     // Return the size of your dataset

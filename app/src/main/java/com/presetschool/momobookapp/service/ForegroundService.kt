@@ -21,47 +21,60 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.presetschool.momobookapp.MainActivity
 import com.presetschool.momobookapp.R
+import com.presetschool.momobookapp.model.LocalItem
+import com.presetschool.momobookapp.model.MessageSentEvent
+import com.presetschool.momobookapp.model.MessageType
+import com.presetschool.momobookapp.model.SmsRequest
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import org.greenrobot.eventbus.EventBus
+import java.time.LocalDate
 import kotlin.math.absoluteValue
 
 class ForegroundService: Service() {
 
     private var windowManager: WindowManager? = null
     private var overlayView: View? = null
+    private val channelId = "foreground_service_channel"
+    private lateinit var sharedPreference: SharedPreferencesHelper
+    private lateinit var dbHelper: DatabaseHelper
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
         super.onCreate()
         startForegroundService()
+         sharedPreference = SharedPreferencesHelper(this)
+        dbHelper = DatabaseHelper(this)
+
+        val startDate = sharedPreference.getString("start_date")
+        if (startDate.isEmpty()) {
+            sharedPreference.saveString("start_date", LocalDate.now().toString())
+        }
+
+        val delayTime: Int = sharedPreference.getInt("delay_time", 0)
+        if (delayTime == 0) {
+            sharedPreference.saveInt("delay_time", 5)
+        }
 
 //        if (Settings.canDrawOverlays(this)) {
-//            Log.d("OverlayDebug", "Overlay permission granted, showing overlay")
 //            showOverlay()
 //        } else {
-//            Log.d("OverlayDebug", "Overlay permission NOT granted")
 //        }
 
         // 🔹 Register lifecycle listener
         ProcessLifecycleOwner.get().lifecycle.addObserver(AppLifecycleListener(this))
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun startForegroundService() {
-        val channelId = "foreground_service_channel"
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                channelId, "Foreground Service",
-                NotificationManager.IMPORTANCE_LOW
-            )
-            getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
-        }
 
-        val notification = Notification.Builder(this, channelId)
-            .setContentTitle("Overlay Service")
-            .setContentText("Running in the background")
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .build()
+        val channel = NotificationChannel(
+            channelId, "Foreground Service",
+            NotificationManager.IMPORTANCE_LOW
+        )
+        getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
 
-        startForeground(1, notification)
     }
 
     fun showOverlay() {
@@ -89,7 +102,6 @@ class ForegroundService: Service() {
 
         // 🔹 Handle click event to open the MainActivity
         overlayView?.setOnClickListener {
-            Log.d("OverlayDebug", "Overlay clicked! Bringing app to foreground")
 
             val packageName = packageName
             val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -98,13 +110,11 @@ class ForegroundService: Service() {
             if (tasks.isNotEmpty()) {
                 // 🔹 If the app is already running, bring it to the front
                 tasks[0].moveToFront()
-                Log.d("OverlayDebug", "App is running, bringing to foreground")
             } else {
                 // 🔹 If the app is NOT running, launch it
                 val intent = packageManager.getLaunchIntentForPackage(packageName)
                 intent?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 startActivity(intent)
-                Log.d("OverlayDebug", "App was not running, launching MainActivity")
             }
         }
 
@@ -156,6 +166,24 @@ class ForegroundService: Service() {
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val notification = Notification.Builder(this, channelId)
+            .setContentTitle("Overlay Service")
+            .setContentText("Running in the background")
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .build()
+
+        startForeground(1, notification)
+
+        CoroutineScope(Dispatchers.Main).launch {
+            while (isActive) {
+
+                val time = sharedPreference.getInt("delay_time").toLong()
+                sendData()
+                delay(1000 * 60 * time)
+//                delay(1000  * time)
+            }
+        }
+
         return START_STICKY
     }
 
@@ -173,7 +201,106 @@ class ForegroundService: Service() {
         if (overlayView != null) {
             windowManager?.removeView(overlayView)
             overlayView = null
-            Log.d("OverlayDebug", "Overlay removed")
         }
+    }
+
+
+    private fun sendData() {
+
+//        val sharedPreference = SharedPreferencesHelper(this)
+
+        val originalDateStr = sharedPreference.getString("start_date")
+
+        val list = originalDateStr.split("-")
+        val filterDate = "${list[2]}/${list[1]}/${list[0]}"
+
+        val items = dbHelper.getAllItems()
+        val ids: ArrayList<String> = ArrayList()
+        for (item in items) {
+            ids.add(item._id)
+        }
+
+        var IDs: String = ids.joinToString(",")
+
+        if (IDs.isEmpty()) IDs = "0"
+
+        val sms = SmsReader.readNextPendingSms(this, filterDate, IDs)
+
+        if (sms?.let { Utils.messageType(it) } == MessageType.NONE) {
+            dbHelper.addItem(LocalItem(sms.id.toString(), "", sms.body))
+            return
+        }
+
+        if (sms != null) {
+            val amt = Utils.extractAmount(sms)
+            val ref = Utils.extractRef(sms)
+            val sender = Utils.extractSender(sms)
+            val transactionId = Utils.extractTransactionId(sms)
+//            val type: String = if (Utils.messageType(sms) == MessageType.INCOME) "INCOME" else "EXPENSE"
+            val type = if (Utils.messageType(sms) == MessageType.INCOME) "INCOME" else if (Utils.messageType(sms) == MessageType.EXPENSE) "EXPENSE" else "NONE"
+
+            val postRequest = SmsRequest(
+                datetime = sms.apiDate,
+                message = sms.body,
+                ref = ref,
+                mref = "",
+                transactionId = transactionId,
+                sender = sender,
+                id = sms.id.toInt(),
+                type = type,
+                amount = amt,
+                includeInAccount = 1,
+                useTimes = "1",
+                from = if (Utils.isPreset)  "preset" else "wonder"
+            )
+
+            Utils.sendPostRequest(postRequest,
+                success = { msg ->
+                    dbHelper.addItem(LocalItem(sms.id.toString(), "", sms.body))
+                    EventBus.getDefault().post(MessageSentEvent())
+                }, failure = { msg ->
+                })
+
+//            Utils.sendTest(
+//                success = { msg ->
+//                    Log.d("TEST RESULTS", msg)
+//                    EventBus.getDefault().post(MessageSentEvent())
+//                }, failure = { msg ->
+//                    Log.d("TEST FAILED", msg)
+//                })
+        }
+
+
+//        val postRequest = sms?.let {
+////            val type = Utils.messageType(it)
+//            val amt = Utils.extractAmount(it)
+//            val ref = Utils.extractRef(it)
+//            val sender = Utils.extractSender(it)
+//            val transactionId = Utils.extractTransactionId(it)
+//
+//            val type: String = if (Utils.messageType(it) == MessageType.INCOME) "INCOME" else "EXPENSE"
+//
+//            SmsRequest(
+//                datetime = it.apiDate,
+//                message = sms.body,
+//                ref = ref,
+//                mref = "",
+//                transactionId = transactionId,
+//                sender = sender,
+//                id = sms.id.toInt(),
+//                type = type,
+//                amount = amt
+//            )
+//        }
+
+
+//        if (postRequest != null) {
+//            Utils.sendPostRequest(postRequest,
+//                success = { msg ->
+//                    dbHelper.addItem( LocalItem(item.id.toString(), mref, item.body))
+//                }, failure = { msg ->
+//
+//                })
+//        }
     }
 }
