@@ -3,7 +3,6 @@ package com.presetschool.momobookapp.service
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import android.widget.Toast
 import com.presetschool.momobookapp.model.Message
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -115,8 +114,8 @@ object SmsReader {
     }
 
 
-    fun readNextPendingSms(context: Context, filterDate: String, filterId: String): Message?{
-        var sms:Message? = null
+    fun readNextPendingSms(context: Context, filterDate: String, filterId: String): ArrayList<Message?>{
+        val smses:ArrayList<Message?> = ArrayList()
         val senderId = if(Utils.isPreset) "MobileMoney" else  "CalBank"
 
         try {
@@ -130,7 +129,7 @@ object SmsReader {
             val selection = "address LIKE ? AND date >= ? AND _id not in ($filterId)"
             val selectionArgs = arrayOf("%$senderId%", filterTimestamp.toString())
 
-            val cursor = context.contentResolver.query(uri, projection, selection, selectionArgs, "date ASC LIMIT 1")
+            val cursor = context.contentResolver.query(uri, projection, selection, selectionArgs, " date ASC ")
 
             cursor?.use {
                 val addressIndex = it.getColumnIndex("address")
@@ -148,13 +147,15 @@ object SmsReader {
                     val formattedDate = formatDate(timestamp)
                     val formattedDate2 = formatDate2(timestamp)
 
-                    sms = Message(
+                    smses.add(
+                        Message(
                         apiDate = formattedDate,
                         displayDate = formattedDate2,
                         body = message,
                         id = id,
-                        address = sender
+                        address = sender)
                     )
+
                 }
             }
         } catch (e: Exception) {
@@ -162,7 +163,7 @@ object SmsReader {
 //            Toast.makeText(context, "Error reading SMS: ${e.message}", Toast.LENGTH_LONG).show()
         }
 
-        return sms
+        return smses
     }
 
     // Function to format timestamp into a readable date and time

@@ -16,7 +16,7 @@ import retrofit2.Response
 class Utils {
 
     companion object {
-        const val isPreset: Boolean = false
+        const val isPreset: Boolean = true
 
         fun sendPostRequest(
             postRequest: SmsRequest, success: (result: String) -> Unit,

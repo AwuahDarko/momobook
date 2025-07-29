@@ -22,6 +22,7 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import com.presetschool.momobookapp.MainActivity
 import com.presetschool.momobookapp.R
 import com.presetschool.momobookapp.model.LocalItem
+import com.presetschool.momobookapp.model.Message
 import com.presetschool.momobookapp.model.MessageSentEvent
 import com.presetschool.momobookapp.model.MessageType
 import com.presetschool.momobookapp.model.SmsRequest
@@ -205,7 +206,7 @@ class ForegroundService: Service() {
     }
 
 
-    private fun sendData() {
+    private suspend fun sendData() {
 
 //        val sharedPreference = SharedPreferencesHelper(this)
 
@@ -224,42 +225,45 @@ class ForegroundService: Service() {
 
         if (IDs.isEmpty()) IDs = "0"
 
-        val sms = SmsReader.readNextPendingSms(this, filterDate, IDs)
+        val smses: ArrayList<Message?> = SmsReader.readNextPendingSms(this, filterDate, IDs)
 
-        if (sms?.let { Utils.messageType(it) } == MessageType.NONE) {
-            dbHelper.addItem(LocalItem(sms.id.toString(), "", sms.body))
-            return
-        }
 
-        if (sms != null) {
-            val amt = Utils.extractAmount(sms)
-            val ref = Utils.extractRef(sms)
-            val sender = Utils.extractSender(sms)
-            val transactionId = Utils.extractTransactionId(sms)
-//            val type: String = if (Utils.messageType(sms) == MessageType.INCOME) "INCOME" else "EXPENSE"
-            val type = if (Utils.messageType(sms) == MessageType.INCOME) "INCOME" else if (Utils.messageType(sms) == MessageType.EXPENSE) "EXPENSE" else "NONE"
+        for (sms in smses){
+            if (sms?.let { Utils.messageType(it) } == MessageType.NONE) {
+                dbHelper.addItem(LocalItem(sms.id.toString(), "", sms.body))
+                return
+            }
 
-            val postRequest = SmsRequest(
-                datetime = sms.apiDate,
-                message = sms.body,
-                ref = ref,
-                mref = "",
-                transactionId = transactionId,
-                sender = sender,
-                id = sms.id.toInt(),
-                type = type,
-                amount = amt,
-                includeInAccount = 1,
-                useTimes = "1",
-                from = if (Utils.isPreset)  "preset" else "wonder"
-            )
+            if (sms != null) {
+                val amt = Utils.extractAmount(sms)
+                val ref = Utils.extractRef(sms)
+                val sender = Utils.extractSender(sms)
+                val transactionId = Utils.extractTransactionId(sms)
 
-            Utils.sendPostRequest(postRequest,
-                success = { msg ->
-                    dbHelper.addItem(LocalItem(sms.id.toString(), "", sms.body))
-                    EventBus.getDefault().post(MessageSentEvent())
-                }, failure = { msg ->
-                })
+                val type = if (Utils.messageType(sms) == MessageType.INCOME) "INCOME" else if (Utils.messageType(sms) == MessageType.EXPENSE) "EXPENSE" else "NONE"
+
+                val postRequest = SmsRequest(
+                    datetime = sms.apiDate,
+                    message = sms.body,
+                    ref = ref,
+                    mref = "",
+                    transactionId = transactionId,
+                    sender = sender,
+                    id = sms.id.toInt(),
+                    type = type,
+                    amount = amt,
+                    includeInAccount = 1,
+                    useTimes = "1",
+                    from = if (Utils.isPreset)  "preset" else "wonder"
+                )
+
+                Utils.sendPostRequest(postRequest,
+                    success = { msg ->
+                        dbHelper.addItem(LocalItem(sms.id.toString(), "", sms.body))
+                        EventBus.getDefault().post(MessageSentEvent())
+                    }, failure = { msg ->
+                    })
+
 
 //            Utils.sendTest(
 //                success = { msg ->
@@ -268,7 +272,13 @@ class ForegroundService: Service() {
 //                }, failure = { msg ->
 //                    Log.d("TEST FAILED", msg)
 //                })
+
+                // don't overwhelm the server
+                delay(500)
+            }
         }
+
+
 
 
 //        val postRequest = sms?.let {

@@ -10,31 +10,16 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.presetschool.momobookapp.model.LocalItem
-import com.presetschool.momobookapp.model.MessageSentEvent
-import com.presetschool.momobookapp.model.MessageType
-import com.presetschool.momobookapp.model.SmsRequest
-import com.presetschool.momobookapp.service.DatabaseHelper
 import com.presetschool.momobookapp.service.ForegroundService
 import com.presetschool.momobookapp.service.SharedPreferencesHelper
-import com.presetschool.momobookapp.service.SmsReader
 import com.presetschool.momobookapp.service.Utils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import org.greenrobot.eventbus.EventBus
 import java.time.LocalDate
 import java.util.concurrent.Executor
-import kotlinx.coroutines.delay
 
 class LoginActivity : AppCompatActivity() {
 //    override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,7 +45,7 @@ class LoginActivity : AppCompatActivity() {
 
     // Set click listener for fingerprint icon to trigger authentication
     // TODO ========
-    private val disable = false
+    private val enableBtn = false
 //    private lateinit var dbHelper: DatabaseHelper
     private val SMS_PERMISSION_REQUEST = 101
     private val FOREGROUND_PERMISSION_REQUEST = 1001
@@ -113,6 +98,7 @@ class LoginActivity : AppCompatActivity() {
         appLogo = findViewById(R.id.app_logo)
 
         if(!Utils.isPreset) appLogo.setImageResource(R.drawable.wonder)
+
 
 
         // Set click listener for fingerprint icon to trigger authentication
@@ -235,7 +221,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun disableFingerprintLogin() {
         fingerprintIcon.setColorFilter(ContextCompat.getColor(this, R.color.disabled_color))
-        fingerprintIcon.isEnabled = disable
+        fingerprintIcon.isEnabled = enableBtn
         statusText.text = "Fingerprint login unavailable"
     }
 
