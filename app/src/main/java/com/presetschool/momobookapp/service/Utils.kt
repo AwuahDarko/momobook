@@ -114,7 +114,10 @@ class Utils {
             }
 
             val body = message.body.substring(0, 20)
-            return if (body.lowercase().contains("payment for") or body.lowercase().contains("payment made for")) {
+            return if (body.lowercase().contains("payment for") ||
+                body.lowercase().contains("payment made for") ||
+                body.lowercase().contains("your payment of")
+                ) {
                 MessageType.EXPENSE
             } else if (body.lowercase().contains("payment received") or body.lowercase().contains("an amount of")) {
                 MessageType.INCOME
@@ -163,8 +166,15 @@ class Utils {
 
                     if(message.body.contains("Reference:")){
                         val bod = message.body.split("Reference:")[1]
-                        val ref = bod.split("Transaction ID:")[0]
-                        return ref.trim().replace(".", "")
+                        val refSplitList = bod.split("Transaction ID:")
+                        if(refSplitList.size > 1){
+                            val ref = bod.split("Transaction ID:")[0]
+                            return ref.trim().replace(".", "")
+                        }
+
+                        val firstPart = bod.split("Transaction Id:")[0]
+                        val ref = firstPart.split(".")[0]
+                        return ref.trim().replace(".", "").trim()
                     }
 
                     val list = message.body.split("GHS")
@@ -204,6 +214,10 @@ class Utils {
 
                 if (messageType(message) == MessageType.EXPENSE) {
                     var send = secondPart.split("to")[1]
+                    if(!send.contains("Current Balance:")){
+                        return ""
+                    }
+
                     send = send.replace(".Current Balance:", "").trim()
                     return send.replace("Current Balance:", "").trim()
                 }
@@ -242,9 +256,15 @@ class Utils {
                 val secondPart = list[1]
 
                 if (messageType(message) == MessageType.EXPENSE) {
+                    val li = secondPart.split("Fee charged:")
+                    if(li.size > 1){
+                        val trans = secondPart.split("Fee charged:")[0]
+                        return trans.replace(".", "").trim()
+                    }
 
-                    val trans = secondPart.split("Fee charged:")[0]
+                    val trans = secondPart.split("External")[0]
                     return trans.replace(".", "").trim()
+
                 }
 
                 if (messageType(message) == MessageType.INCOME) {
