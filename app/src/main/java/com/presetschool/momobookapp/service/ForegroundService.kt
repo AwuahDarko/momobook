@@ -10,16 +10,12 @@ import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
-import android.provider.Settings
-import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ProcessLifecycleOwner
-import com.presetschool.momobookapp.MainActivity
 import com.presetschool.momobookapp.R
 import com.presetschool.momobookapp.model.LocalItem
 import com.presetschool.momobookapp.model.Message
