@@ -207,7 +207,6 @@ class ForegroundService: Service() {
 
 
     private suspend fun sendData() {
-
 //        val sharedPreference = SharedPreferencesHelper(this)
 
         val originalDateStr = sharedPreference.getString("start_date")
@@ -226,6 +225,7 @@ class ForegroundService: Service() {
         if (IDs.isEmpty()) IDs = "0"
 
         val smses: ArrayList<Message?> = SmsReader.readNextPendingSms(this, filterDate, IDs)
+
 
 
         for (sms in smses){
@@ -254,7 +254,7 @@ class ForegroundService: Service() {
                     amount = amt,
                     includeInAccount = 1,
                     useTimes = "1",
-                    from = if (Utils.isPreset)  "preset" else "wonder"
+                    from =  "wonder"
                 )
 
                 Utils.sendPostRequest(postRequest,

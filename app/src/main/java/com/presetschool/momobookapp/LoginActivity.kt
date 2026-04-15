@@ -97,7 +97,7 @@ class LoginActivity : AppCompatActivity() {
         errorText = findViewById(R.id.error_text)
         appLogo = findViewById(R.id.app_logo)
 
-        if(!Utils.isPreset) appLogo.setImageResource(R.drawable.wonder)
+        appLogo.setImageResource(R.drawable.wonder)
 
 
 
@@ -250,6 +250,7 @@ class LoginActivity : AppCompatActivity() {
         if (requestCode == FOREGROUND_PERMISSION_REQUEST && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 //            startMyForegroundService()
 //            Log.d("FOREGROUND_PERMISSION_REQUEST", "FOREGROUND_PERMISSION_REQUEST")
+//            Toast.makeText(this, "Permission done for background sync", Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(this, "Permission denied for background sync", Toast.LENGTH_SHORT).show()
         }

@@ -118,7 +118,7 @@ class PendingMessageItemAdapter(
                 amount = amt,
                 includeInAccount = if( holder.checkbox.isChecked ) 1 else 0,
                 useTimes = use,
-                from = if (Utils.isPreset)  "preset" else "wonder"
+                from = "wonder"
             )
 
             onLoading()

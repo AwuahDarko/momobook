@@ -16,7 +16,6 @@ import retrofit2.Response
 class Utils {
 
     companion object {
-        const val isPreset: Boolean = true
 
         fun sendPostRequest(
             postRequest: SmsRequest, success: (result: String) -> Unit,
@@ -102,7 +101,7 @@ class Utils {
         }
 
         fun messageType(message: Message): MessageType {
-            if(!isPreset){
+            if(message.address.lowercase() == "calbank"){
                 val body = message.body.replace("\n", " ").substring(0, 85)
                 return if (body.lowercase().contains("you have paid") ) {
                     MessageType.EXPENSE
@@ -160,8 +159,8 @@ class Utils {
 
             try {
                 if (messageType(message) == MessageType.EXPENSE) {
-                    if(!isPreset){
-                        return "";
+                    if(message.address.lowercase() == "calbank"){
+                        return ""
                     }
 
                     if(message.body.contains("Reference:")){
@@ -185,7 +184,7 @@ class Utils {
                 }
 
                 if (messageType(message) == MessageType.INCOME) {
-                    if(!isPreset){
+                    if(message.address.lowercase() == "calbank"){
                         val list = message.body.split("from")
                         val secondPart = list[1]
                         val ref = secondPart.split("to WONDER HEIGHTS INTERNATIONAL SCHOOL")[0]
@@ -206,7 +205,7 @@ class Utils {
         fun extractSender(message: Message): String {
             if (messageType(message) == MessageType.NONE) return ""
 
-            if(!isPreset) return extractRef(message)
+            if(message.address.lowercase() == "calbank") return extractRef(message)
 
             try {
                 val list = message.body.split("GHS")
@@ -243,7 +242,7 @@ class Utils {
             if (messageType(message) == MessageType.NONE) return ""
 
             try {
-                if(!isPreset){
+                if(message.address.lowercase() == "calbank"){
                     val list = message.body.split("Txn:")
                     val secondPart = list[1]
                     return secondPart.replace("Thank you", "").replace(".", "").trim()
