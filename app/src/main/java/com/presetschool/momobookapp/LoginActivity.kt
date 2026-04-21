@@ -45,7 +45,7 @@ class LoginActivity : AppCompatActivity() {
 
     // Set click listener for fingerprint icon to trigger authentication
     // TODO ========
-    private val enableBtn = false
+    private val enableBtn = true
 //    private lateinit var dbHelper: DatabaseHelper
     private val SMS_PERMISSION_REQUEST = 101
     private val FOREGROUND_PERMISSION_REQUEST = 1001
@@ -104,8 +104,8 @@ class LoginActivity : AppCompatActivity() {
         // Set click listener for fingerprint icon to trigger authentication
         // TODO ========
         fingerprintIcon.setOnClickListener {
-//            onLoginSuccess()
-            showBiometricPrompt()
+            onLoginSuccess()
+//            showBiometricPrompt()
         }
     }
 
