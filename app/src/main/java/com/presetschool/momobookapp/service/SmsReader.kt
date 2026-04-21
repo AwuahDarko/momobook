@@ -12,7 +12,7 @@ object SmsReader {
 
     fun readSms(context: Context, filterDate: String): List<Message> {
         val smsList = mutableListOf<Message>()
-        val senderId = if(Utils.isPreset) "MobileMoney" else  "CalBank"
+        val senderId = "MobileMoney"
 
 
         try {
@@ -65,7 +65,7 @@ object SmsReader {
 
     fun readPendingSms(context: Context, filterDate: String, filterId: String):List<Message> {
         val smsList = mutableListOf<Message>()
-        val senderId = if(Utils.isPreset) "MobileMoney" else  "CalBank"
+        val senderId = "MobileMoney"
 
         try {
             val uri: Uri = Uri.parse("content://sms/inbox") // Inbox messages
@@ -116,7 +116,7 @@ object SmsReader {
 
     fun readNextPendingSms(context: Context, filterDate: String, filterId: String): ArrayList<Message?>{
         val smses:ArrayList<Message?> = ArrayList()
-        val senderId = if(Utils.isPreset) "MobileMoney" else  "CalBank"
+        val senderId = "MobileMoney"
 
         try {
             val uri: Uri = Uri.parse("content://sms/inbox") // Inbox messages

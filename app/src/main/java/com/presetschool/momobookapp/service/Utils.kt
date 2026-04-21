@@ -16,7 +16,6 @@ import retrofit2.Response
 class Utils {
 
     companion object {
-        const val isPreset: Boolean = true
 
         fun sendPostRequest(
             postRequest: SmsRequest, success: (result: String) -> Unit,
@@ -102,16 +101,6 @@ class Utils {
         }
 
         fun messageType(message: Message): MessageType {
-            if(!isPreset){
-                val body = message.body.replace("\n", " ").substring(0, 85)
-                return if (body.lowercase().contains("you have paid") ) {
-                    MessageType.EXPENSE
-                } else if (body.lowercase().contains("you have received")) {
-                    MessageType.INCOME
-                } else {
-                    MessageType.NONE
-                }
-            }
 
             val body = message.body.substring(0, 20)
             return if (body.lowercase().contains("payment for") ||
@@ -160,9 +149,6 @@ class Utils {
 
             try {
                 if (messageType(message) == MessageType.EXPENSE) {
-                    if(!isPreset){
-                        return "";
-                    }
 
                     if(message.body.contains("Reference:")){
                         val bod = message.body.split("Reference:")[1]
@@ -185,12 +171,6 @@ class Utils {
                 }
 
                 if (messageType(message) == MessageType.INCOME) {
-                    if(!isPreset){
-                        val list = message.body.split("from")
-                        val secondPart = list[1]
-                        val ref = secondPart.split("to WONDER HEIGHTS INTERNATIONAL SCHOOL")[0]
-                        return ref.trim().replace(".", "")
-                    }
 
                     val list = message.body.split("Reference:")
                     val secondPart = list[1]
@@ -205,8 +185,6 @@ class Utils {
 
         fun extractSender(message: Message): String {
             if (messageType(message) == MessageType.NONE) return ""
-
-            if(!isPreset) return extractRef(message)
 
             try {
                 val list = message.body.split("GHS")
@@ -243,11 +221,6 @@ class Utils {
             if (messageType(message) == MessageType.NONE) return ""
 
             try {
-                if(!isPreset){
-                    val list = message.body.split("Txn:")
-                    val secondPart = list[1]
-                    return secondPart.replace("Thank you", "").replace(".", "").trim()
-                }
 
                 var list = message.body.split("Transaction ID:")
                 if (list.size == 1) {

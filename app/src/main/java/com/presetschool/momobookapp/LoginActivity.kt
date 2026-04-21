@@ -97,7 +97,7 @@ class LoginActivity : AppCompatActivity() {
         errorText = findViewById(R.id.error_text)
         appLogo = findViewById(R.id.app_logo)
 
-        if(!Utils.isPreset) appLogo.setImageResource(R.drawable.wonder)
+//        if(!Utils.isPreset) appLogo.setImageResource(R.drawable.wonder)
 
 
 

@@ -254,7 +254,7 @@ class ForegroundService: Service() {
                     amount = amt,
                     includeInAccount = 1,
                     useTimes = "1",
-                    from = if (Utils.isPreset)  "preset" else "wonder"
+                    from = "preset"
                 )
 
                 Utils.sendPostRequest(postRequest,
